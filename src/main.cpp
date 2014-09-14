@@ -30,8 +30,8 @@ G308_Geometry* cube = NULL;
 G308_Geometry* teapot = NULL;
 G308_Geometry* torus = NULL;
 G308_Geometry* bunny = NULL;
-G308_Geometry* envmap = NULL;
-G308_Geometry* normap = NULL;
+//G308_Geometry* envmap = NULL;
+//G308_Geometry* normap = NULL;
 
 
 int main(int argc, char** argv){
@@ -56,7 +56,11 @@ int main(int argc, char** argv){
 	glutMainLoop();
 
 	delete table;
+	delete sphere;
 	delete cube;
+	delete teapot;
+	delete torus;
+	delete bunny;
 
 	return 0;
 }
