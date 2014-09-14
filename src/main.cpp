@@ -8,8 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gl/glut.h>
+#include <ctime>
 #include "define.h"
 #include "G308_Geometry.h"
+#include "materials.hpp"
 
 GLuint g_mainWnd;
 GLuint g_nWinWidth = G308_WIN_WIDTH;
@@ -33,6 +35,7 @@ G308_Geometry* normap = NULL;
 
 
 int main(int argc, char** argv){
+	clock_t start = clock();
 	glutInit(&argc, argv);
 	glutInitDisplayMode( GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA );
 	glutInitWindowSize(g_nWinWidth, g_nWinHeight);
@@ -47,6 +50,8 @@ int main(int argc, char** argv){
 	G308_SetLight();
 
 	G308_LoadFiles();
+
+	printf("\nFile loading took %.2f seconds.\n", 1.f/((float)(clock()-start)/CLOCKS_PER_SEC));
 
 	glutMainLoop();
 
@@ -84,7 +89,10 @@ void G308_display(){
 		// bronze metal
 		glPushMatrix();
 		glTranslatef(-4, 2, 4);
-		glColor3f(205./255., 127./255., 50./255.);
+//		glColor3f(205./255., 127./255., 50./255.);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_bronze_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, mat_bronze_shininess);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_bronze_diffuse);
 		sphere->RenderGeometry();
 		glPopMatrix();
 	}
@@ -109,6 +117,9 @@ void G308_display(){
 		glPushMatrix();
 		glTranslatef(5, 2, 6);
 		glColor3f(.9, .05, .01);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_plastic_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, mat_plastic_shininess);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_plastic_diffuse);
 		torus->RenderGeometry();
 		glPopMatrix();
 	}
