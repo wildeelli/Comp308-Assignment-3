@@ -72,40 +72,54 @@ void G308_display(){
 	glColor3f(.8, .8, .2);
 
 	glPushMatrix();
+	// do arcball for camera control?
+
+
 
 	if (table) {
+		// wood with wood.jpg as texture map
 		table->RenderGeometry();
 	}
-	glPushMatrix();
-	glTranslatef(-4, 2, 4);
 	if (sphere) {
+		// bronze metal
+		glPushMatrix();
+		glTranslatef(-4, 2, 4);
+		glColor3f(205./255., 127./255., 50./255.);
 		sphere->RenderGeometry();
+		glPopMatrix();
 	}
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(4, 2, -4);
 	if (cube) {
+		// brick block with brick.jpg as the texture map
+		glPushMatrix();
+		glScalef(1.2, 1.2, 1.2);
+		glTranslatef(4.5, 2, -4.5);
 		cube->RenderGeometry();
+		glPopMatrix();
 	}
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(-4, 2, -4);
 	if (teapot) {
+		// bluish metal (lead?)
+		glPushMatrix();
+		glTranslatef(-4, 2, -4);
+		glColor3f(.8, .8, .91);
 		teapot->RenderGeometry();
+		glPopMatrix();
 	}
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(4, 2, 4);
 	if (torus) {
+		// red plastic
+		glPushMatrix();
+		glTranslatef(5, 2, 6);
+		glColor3f(.9, .05, .01);
 		torus->RenderGeometry();
+		glPopMatrix();
 	}
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(0, 2, 0);
 	if (bunny) {
+		// white bone china
+		glPushMatrix();
+		glTranslatef(1, 2, 2);
+		glColor3f(.9, .9, .95);
 		bunny->RenderGeometry();
+		glPopMatrix();
 	}
-	glPopMatrix();
 
 	glPopMatrix();
 
@@ -131,7 +145,7 @@ void G308_SetCamera(){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	gluLookAt(60.0, 40.0, 60.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(30.0, 20.0, 45.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void G308_LoadFiles(){
