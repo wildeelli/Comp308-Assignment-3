@@ -1,19 +1,21 @@
 CC = g++
-LPATH = -L/usr/pkg/lib
+CFLAGS = -Wall -Wextra -pedantic
+IPATH = -I/usr/X11/include -I/usr/pkg/include
+LPATH = -L/usr/X11/lib -L/usr/pkg/lib
 LDPATH = -Wl,-R/usr/pkg/lib 
-CFLAGS=-g -Wall
-LIBS=-lopengl32 -lfreeglut -lGLU32 -ljpeg -lpng16 -lm
-IPATH= -I/usr/pkg/include
+LIBS = -lm -lopengl32 -lGLU32 -lfreeglut -ljpeg -lpng16 
+RM = rm
 
+BUILD = ./build/
 SRC = ./src/
 
-all: TextureDemo
-TextureDemo : TextureDemo.o G308_ImageLoader.o
-	$(CC) -o TextureDemo TextureDemo.o G308_ImageLoader.o $(LIBS) $(LPATH) $(LDPATH)
-TextureDemo.o :
-	$(CC) -c $(CFLAGS) $(SRC)TextureDemo.cpp $(IPATH)  
-G308_ImageLoader.o :
-	$(CC) -c $(CFLAGS) $(SRC)G308_ImageLoader.cpp $(IPATH)
-clean :
-	rm -rf *.o
-	rm TextureDemo
+all: $(BUILD)As3
+
+$(BUILD)As3: $(BUILD)G308_ImageLoader.o $(BUILD)main.o $(BUILD)G308_Geometry.o
+	$(CC) -g -o $@ $^ $(LIBS) $(LPATH) $(LDPATH)
+	
+$(BUILD)%.o:  $(SRC)%.cpp
+	$(CC) $(CFLAGS) -g -c -O3 -o $@ $^ $(IPATH)
+
+clean:
+	$(RM) -f $(BUILD)*.o $(BUILD)*.gch $(BUILD)MidTerm*

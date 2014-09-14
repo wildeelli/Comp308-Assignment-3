@@ -13,10 +13,15 @@
 //
 //----------------------------------------------------------------------------
 
+#include "define.h"
 #include "G308_Geometry.h"
 #include "G308_ImageLoader.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include <stdio.h>
 #include <math.h>
+#include <gl/glut.h>
 
 G308_Geometry::G308_Geometry(void) {
 	m_pVertexArray = NULL;
@@ -26,8 +31,9 @@ G308_Geometry::G308_Geometry(void) {
 
 	mode = G308_SHADE_POLYGON;
 
-	m_nNumPoint = m_nNumUV = m_nNumPolygon = 0;
+	m_nNumPoint = m_nNumUV = m_nNumPolygon = m_nNumNormal = 0;
 	m_glGeomListPoly = m_glGeomListWire = 0;
+	texture = NULL;
 }
 
 G308_Geometry::~G308_Geometry(void) {
@@ -188,6 +194,48 @@ void G308_Geometry::ReadOBJ(const char *filename) {
 //--------------------------------------------------------------
 void G308_Geometry::ReadTexture(const char* filename) {
 	//Your code here
+	unsigned int i;
+	for (i = 0; i < strlen(filename); i++) {
+		if (filename[i] == '.') {
+			break;
+		}
+	}
+	char extension[5];
+	strcpy(extension, &filename[i + 1]);
+	//printf(extension);
+
+	texture = new GLuint;
+	TextureInfo t;
+
+	if (strcmp(extension, "jpg") == 0 || strcmp(extension, "jpeg") == 0)
+		loadTextureFromJPEG(const_cast<char *>(filename), &t);
+	else if (strcmp(extension, "png") == 0)
+		loadTextureFromPNG(const_cast<char *>(filename), &t);
+	else {
+		printf("Invalid format. Only supports JPEG and PNG.\n");
+		exit(1);
+	}
+
+	//Init the texture storage, and set some parameters.
+	//(I high recommend reading up on these commands)
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	//Only useful for PNG files, since JPEG doesn't support alpha
+	if (t.hasAlpha) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t.width, t.height, 0, GL_RGBA,
+				GL_UNSIGNED_BYTE, t.textureData);
+	} else {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.width, t.height, 0, GL_RGB,
+				GL_UNSIGNED_BYTE, t.textureData);
+	}
+	//Once the texture has been loaded by GL, we don't need this anymore.
+	free(t.textureData);
 }
 
 //--------------------------------------------------------------
@@ -203,7 +251,34 @@ void G308_Geometry::CreateGLPolyGeometry() {
 	m_glGeomListPoly = glGenLists(1);
 	glNewList(m_glGeomListPoly, GL_COMPILE);
 
+	if (texture) {
+		glEnable(GL_TEXTURE_2D);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glBindTexture(GL_TEXTURE_2D, *texture);
+	}
+
+
 	//Your code here
+	for (int i = 0; i < m_nNumPolygon; i++){
+		G308_Triangle t = m_pTriangles[i];
+		glBegin( GL_TRIANGLES );
+			glNormal3fv(&m_pNormalArray[t.n1].x);
+			if (texture) glTexCoord2fv(&m_pUVArray[t.t1].u);
+			glVertex3fv(&m_pVertexArray[t.v1].x);
+
+			glNormal3fv(&m_pNormalArray[t.n2].x);
+			if (texture) glTexCoord2fv(&m_pUVArray[t.t2].u);
+			glVertex3fv(&m_pVertexArray[t.v2].x);
+
+			glNormal3fv(&m_pNormalArray[t.n3].x);
+			if (texture) glTexCoord2fv(&m_pUVArray[t.t3].u);
+			glVertex3fv(&m_pVertexArray[t.v3].x);
+		glEnd();
+	}
+//	glFlush();
+	if (texture){
+		glDisable(GL_TEXTURE_2D);
+	}
 
 	glEndList();
 }
