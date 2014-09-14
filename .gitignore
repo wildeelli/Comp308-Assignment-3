@@ -29,3 +29,5 @@
 
 # Other
 *.pdf
+/.cproject
+/.project
