@@ -78,48 +78,68 @@ void G308_display(){
 	}
 
 	G308_SetCamera();
-	glColor3f(.8, .8, .2);
+//	glColor3f(.8, .8, .2);
 
 	glPushMatrix();
 	// do arcball for camera control?
 
-
+//	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
 
 	if (table) {
 		// wood with wood.jpg as texture map
+		glPushMatrix();
+//		glRotatef(180, 1,0,0);
+//		glColor3f(1,1,1);
 		table->RenderGeometry();
+		glPopMatrix();
 	}
 	if (sphere) {
 		// bronze metal
 		glPushMatrix();
 		glTranslatef(-4, 2, 4);
-//		glColor3f(205./255., 127./255., 50./255.);
+		glColor3f(205./255., 127./255., 50./255.);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_bronze_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_bronze_shininess);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_bronze_diffuse);
 		sphere->RenderGeometry();
 		glPopMatrix();
 	}
-	if (cube) {
+	if (cube && true) {
 		// brick block with brick.jpg as the texture map
 		glPushMatrix();
 		glScalef(1.2, 1.2, 1.2);
 		glTranslatef(4.5, 2, -4.5);
 		cube->RenderGeometry();
 		glPopMatrix();
+	} else {
+		glPushMatrix();
+		glScalef(1.2, 1.2, 1.2);
+		glScalef(.25, .25, .25);
+		glTranslatef(4, 2, -4);
+		for (int i=0; i<4 ; ++i){
+			for (int j=0; j<4; ++j){
+				glPushMatrix();
+				glTranslatef(0,j,i);
+				cube->RenderGeometry();
+				glPopMatrix();
+			}
+		}
+
+
+		glPopMatrix();
 	}
 	if (teapot) {
 		// bluish metal (lead?)
 		glPushMatrix();
-		glTranslatef(-4, 2, -4);
+		glTranslatef(-4, 1, -4);
 		glColor3f(.8, .8, .91);
 		teapot->RenderGeometry();
 		glPopMatrix();
 	}
-	if (torus) {
+	if (torus && false) {
 		// red plastic
 		glPushMatrix();
-		glTranslatef(5, 2, 6);
+		glTranslatef(5, 1, 6);
 		glColor3f(.9, .05, .01);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_plastic_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_plastic_shininess);
@@ -130,7 +150,7 @@ void G308_display(){
 	if (bunny) {
 		// white bone china
 		glPushMatrix();
-		glTranslatef(1, 2, 2);
+		glTranslatef(1, .5, 2);
 		glColor3f(.9, .9, .95);
 		bunny->RenderGeometry();
 		glPopMatrix();
@@ -161,6 +181,7 @@ void G308_SetCamera(){
 	glLoadIdentity();
 
 	gluLookAt(30.0, 20.0, 45.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+//	gluLookAt(30.0, 0.0, 45.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void G308_LoadFiles(){
@@ -170,6 +191,8 @@ void G308_LoadFiles(){
 	table->ReadOBJ("assets/Table.obj");
 	table->ReadTexture("assets/wood.jpg");
 	table->CreateGLPolyGeometry();
+//	table->CreateGLWireGeometry();
+//	table->toggleMode();
 
 	sphere = new G308_Geometry;
 	sphere->ReadOBJ("assets/Sphere.obj");
@@ -179,6 +202,9 @@ void G308_LoadFiles(){
 	cube->ReadOBJ("assets/Box.obj");
 	cube->ReadTexture("assets/brick.jpg");
 	cube->CreateGLPolyGeometry();
+	cube->CreateGLWireGeometry();
+//	cube->toggleMode();
+
 
 	teapot = new G308_Geometry;
 	teapot->ReadOBJ("assets/Teapot.obj");
@@ -194,14 +220,31 @@ void G308_LoadFiles(){
 }
 
 void G308_SetLight(){
-	float direction[] = { 1.0f, 1.0f, 1.0f, 0.0f };
-	float diffintensity[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	float ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+//	float direction[] = { 1.0f, 1.0f, 1.0f, 0.0f };
+//	float diffintensity[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+//	float ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 
-	glLightfv(GL_LIGHT0, GL_POSITION, direction);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffintensity);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	// setup the global light
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, mat_zero);
+	// setup the ambient light
+	glLightfv(GL_LIGHT0, GL_POSITION, l0_direction);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_diffintensity);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, l1_ambient);
 
-	glEnable(GL_LIGHT0);
+//	glEnable(GL_LIGHT0);
+//	glDisable(GL_LIGHT0);
+
+	// setup the spot light
+
+	glLightfv(GL_LIGHT1, GL_POSITION, l1_position);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, l1_direction);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, l1_diffintensity);
+//	glLightfv(GL_LIGHT1, GL_AMBIENT, l1_ambient);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, l1_specular);
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 0);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 17.5);
+
+	glEnable(GL_LIGHT1);
 }
+
 

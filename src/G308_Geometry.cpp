@@ -251,7 +251,8 @@ void G308_Geometry::CreateGLPolyGeometry() {
 	m_glGeomListPoly = glGenLists(1);
 	glNewList(m_glGeomListPoly, GL_COMPILE);
 
-	if (texture) {
+	if (texture	) {
+		glDisable(GL_COLOR_MATERIAL);
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		glBindTexture(GL_TEXTURE_2D, *texture);
@@ -278,6 +279,7 @@ void G308_Geometry::CreateGLPolyGeometry() {
 //	glFlush();
 	if (texture){
 		glDisable(GL_TEXTURE_2D);
+		glEnable(GL_COLOR_MATERIAL);
 	}
 
 	glEndList();
