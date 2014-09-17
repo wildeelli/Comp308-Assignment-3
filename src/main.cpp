@@ -136,7 +136,7 @@ void G308_display(){
 		teapot->RenderGeometry();
 		glPopMatrix();
 	}
-	if (torus && false) {
+	if (torus) {
 		// red plastic
 		glPushMatrix();
 		glTranslatef(5, 1, 6);
@@ -231,7 +231,7 @@ void G308_SetLight(){
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_diffintensity);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, l1_ambient);
 
-//	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT0);
 //	glDisable(GL_LIGHT0);
 
 	// setup the spot light

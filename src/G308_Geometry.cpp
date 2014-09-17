@@ -254,7 +254,7 @@ void G308_Geometry::CreateGLPolyGeometry() {
 	if (texture	) {
 		glDisable(GL_COLOR_MATERIAL);
 		glEnable(GL_TEXTURE_2D);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glBindTexture(GL_TEXTURE_2D, *texture);
 	}
 
