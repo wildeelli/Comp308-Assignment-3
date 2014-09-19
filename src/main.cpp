@@ -7,11 +7,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <gl/glew.h>
 #include <gl/glut.h>
 #include <ctime>
 #include "define.h"
 #include "G308_Geometry.h"
 #include "materials.hpp"
+#include "loadShader.h"
 
 GLuint g_mainWnd;
 GLuint g_nWinWidth = G308_WIN_WIDTH;
@@ -33,6 +35,8 @@ G308_Geometry* bunny = NULL;
 //G308_Geometry* envmap = NULL;
 //G308_Geometry* normap = NULL;
 
+GLuint shaderID;
+
 
 int main(int argc, char** argv){
 	clock_t start = clock();
@@ -45,6 +49,15 @@ int main(int argc, char** argv){
 	glutReshapeFunc(G308_Reshape);
 //	glutIdleFunc(idle);
 //	glutMouseFunc(mouseFunc);
+
+	glewInit();
+
+	if (glewIsSupported("GL_VERSION_2_0"))
+		printf("Ready for OpenGL 2.0\n");
+	else {
+		printf("OpenGL 2.0 not supported\n");
+		exit(1);
+	}
 
 	G308_SetCamera();
 	G308_SetLight();
@@ -77,6 +90,8 @@ void G308_display(){
 		printf("%s\n", gluErrorString(err));
 	}
 
+	if (shaderID)	glUseProgram(shaderID);
+
 	G308_SetCamera();
 //	glColor3f(.8, .8, .2);
 
@@ -98,6 +113,7 @@ void G308_display(){
 		glPushMatrix();
 		glTranslatef(-4, 2, 4);
 		glColor3f(205./255., 127./255., 50./255.);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_bronze_ambient);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_bronze_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_bronze_shininess);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_bronze_diffuse);
@@ -106,8 +122,11 @@ void G308_display(){
 	}
 	if (cube && true) {
 		// brick block with brick.jpg as the texture map
+
 		glPushMatrix();
 		glScalef(1.2, 1.2, 1.2);
+		glColor3f(1,1,1);
+
 		glTranslatef(4.5, 2, -4.5);
 		cube->RenderGeometry();
 		glPopMatrix();
@@ -131,7 +150,7 @@ void G308_display(){
 	if (teapot) {
 		// bluish metal (lead?)
 		glPushMatrix();
-		glTranslatef(-4, 1, -4);
+		glTranslatef(-4, .5, -4);
 		glColor3f(.8, .8, .91);
 		teapot->RenderGeometry();
 		glPopMatrix();
@@ -141,9 +160,10 @@ void G308_display(){
 		glPushMatrix();
 		glTranslatef(5, 1, 6);
 		glColor3f(.9, .05, .01);
-		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_plastic_specular);
-		glMaterialfv(GL_FRONT, GL_SHININESS, mat_plastic_shininess);
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_plastic_diffuse);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_red_plastic_ambient);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_red_plastic_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, mat_red_plastic_shininess);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_red_plastic_diffuse);
 		torus->RenderGeometry();
 		glPopMatrix();
 	}
@@ -152,6 +172,10 @@ void G308_display(){
 		glPushMatrix();
 		glTranslatef(1, .5, 2);
 		glColor3f(.9, .9, .95);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_white_plastic_ambient);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_white_plastic_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, mat_white_plastic_shininess);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_white_plastic_diffuse);
 		bunny->RenderGeometry();
 		glPopMatrix();
 	}
@@ -181,7 +205,7 @@ void G308_SetCamera(){
 	glLoadIdentity();
 
 	gluLookAt(30.0, 20.0, 45.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-//	gluLookAt(30.0, 0.0, 45.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+//	gluLookAt(50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void G308_LoadFiles(){
@@ -191,7 +215,7 @@ void G308_LoadFiles(){
 	table->ReadOBJ("assets/Table.obj");
 	table->ReadTexture("assets/wood.jpg");
 	table->CreateGLPolyGeometry();
-//	table->CreateGLWireGeometry();
+	table->CreateGLWireGeometry();
 //	table->toggleMode();
 
 	sphere = new G308_Geometry;
@@ -217,6 +241,10 @@ void G308_LoadFiles(){
 	bunny = new G308_Geometry;
 	bunny->ReadOBJ("assets/Bunny.obj");
 	bunny->CreateGLPolyGeometry();
+
+	printf("\n");
+
+	shaderID = LoadShaders("shaders/vert.glsl", "shaders/frag.glsl");
 }
 
 void G308_SetLight(){
@@ -229,7 +257,7 @@ void G308_SetLight(){
 	// setup the ambient light
 	glLightfv(GL_LIGHT0, GL_POSITION, l0_direction);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_diffintensity);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, l1_ambient);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, l0_ambient);
 
 	glEnable(GL_LIGHT0);
 //	glDisable(GL_LIGHT0);

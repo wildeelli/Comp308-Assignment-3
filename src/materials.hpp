@@ -12,15 +12,22 @@
 
 GLfloat mat_zero[] = {0,0,0,1};
 
-GLfloat mat_plastic_specular[] = { .7, .6, .6, 1. };
-GLfloat mat_plastic_diffuse[] = { .5, .0, .0, 1.};
-GLfloat mat_plastic_shininess[] = { 32. };
+GLfloat mat_red_plastic_ambient[] = {0,0,0,0};
+GLfloat mat_red_plastic_specular[] = { .7, .6, .6, 1. };
+GLfloat mat_red_plastic_diffuse[] = { .5, .0, .0, 1.};
+GLfloat mat_red_plastic_shininess[] = { 32. };
 
+GLfloat mat_white_plastic_ambient[] = {0,0,0,0};
+GLfloat mat_white_plastic_specular[] = { .7, .7, .7, 1. };
+GLfloat mat_white_plastic_diffuse[] = { .55, .55, .55, 1.};
+GLfloat mat_white_plastic_shininess[] = { 32. };
+
+GLfloat mat_bronze_ambient[] = {.2125 ,.1275 , .054 ,1};
 GLfloat mat_bronze_specular[] = { .393548, .271906, .166721, 1. };
 GLfloat mat_bronze_diffuse[] = { .714, .4284, .18144, 1.};
 GLfloat mat_bronze_shininess[] = { 25.6 };
 
-GLfloat l0_direction[] = { 1.0f, 1.0f, 1.0f, 0.0f };
+GLfloat l0_direction[] = { 0.0f, 1.0f, 1.0f, 0.0f };
 GLfloat l0_diffintensity[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 GLfloat l0_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 

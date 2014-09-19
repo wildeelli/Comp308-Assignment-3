@@ -13,15 +13,16 @@
 //
 //----------------------------------------------------------------------------
 
-#include "define.h"
-#include "G308_Geometry.h"
-#include "G308_ImageLoader.h"
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <stdio.h>
 #include <math.h>
+#include <gl/glew.h>
 #include <gl/glut.h>
+#include "define.h"
+#include "G308_Geometry.h"
+#include "G308_ImageLoader.h"
 
 G308_Geometry::G308_Geometry(void) {
 	m_pVertexArray = NULL;
@@ -256,6 +257,11 @@ void G308_Geometry::CreateGLPolyGeometry() {
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glBindTexture(GL_TEXTURE_2D, *texture);
+
+//		int texture_location = glGetUniformLocation(mainProgram.program,"color_texture");
+//		glUniform1i(texture_location, 0);
+//		glBindTexture(GL_TEXTURE_2D,newTexture);
+
 	}
 
 
@@ -264,15 +270,18 @@ void G308_Geometry::CreateGLPolyGeometry() {
 		G308_Triangle t = m_pTriangles[i];
 		glBegin( GL_TRIANGLES );
 			glNormal3fv(&m_pNormalArray[t.n1].x);
-			if (texture) glTexCoord2fv(&m_pUVArray[t.t1].u);
+//			if (texture) glTexCoord2fv(&m_pUVArray[t.t1].u);
+			if (texture) glTexCoord2f(m_pUVArray[t.t1].u*3., m_pUVArray[t.t1].v*3.);
 			glVertex3fv(&m_pVertexArray[t.v1].x);
 
 			glNormal3fv(&m_pNormalArray[t.n2].x);
-			if (texture) glTexCoord2fv(&m_pUVArray[t.t2].u);
+//			if (texture) glTexCoord2fv(&m_pUVArray[t.t2].u);
+			if (texture) glTexCoord2f(m_pUVArray[t.t2].u*3., m_pUVArray[t.t2].v*3.);
 			glVertex3fv(&m_pVertexArray[t.v2].x);
 
 			glNormal3fv(&m_pNormalArray[t.n3].x);
-			if (texture) glTexCoord2fv(&m_pUVArray[t.t3].u);
+//			if (texture) glTexCoord2fv(&m_pUVArray[t.t3].u);
+			if (texture) glTexCoord2f(m_pUVArray[t.t3].u*3., m_pUVArray[t.t3].v*3.);
 			glVertex3fv(&m_pVertexArray[t.v3].x);
 		glEnd();
 	}
