@@ -90,7 +90,11 @@ void G308_display(){
 		printf("%s\n", gluErrorString(err));
 	}
 
-	if (shaderID)	glUseProgram(shaderID);
+	if (shaderID) {
+		glUseProgram(shaderID);
+		glUniform1i(glGetUniformLocation(shaderID, "tex"), 0);
+		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
+	}
 
 	G308_SetCamera();
 //	glColor3f(.8, .8, .2);
@@ -105,6 +109,11 @@ void G308_display(){
 		glPushMatrix();
 //		glRotatef(180, 1,0,0);
 //		glColor3f(1,1,1);
+//		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_wood_ambient);
+//		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_wood_specular);
+//		glMaterialfv(GL_FRONT, GL_SHININESS, mat_wood_shininess);
+//		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_wood_diffuse);
+		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 1);
 		table->RenderGeometry();
 		glPopMatrix();
 	}
@@ -117,6 +126,7 @@ void G308_display(){
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_bronze_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_bronze_shininess);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_bronze_diffuse);
+		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
 		sphere->RenderGeometry();
 		glPopMatrix();
 	}
@@ -128,30 +138,22 @@ void G308_display(){
 		glColor3f(1,1,1);
 
 		glTranslatef(4.5, 2, -4.5);
+		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 1);
 		cube->RenderGeometry();
 		glPopMatrix();
-	} else {
-		glPushMatrix();
-		glScalef(1.2, 1.2, 1.2);
-		glScalef(.25, .25, .25);
-		glTranslatef(4, 2, -4);
-		for (int i=0; i<4 ; ++i){
-			for (int j=0; j<4; ++j){
-				glPushMatrix();
-				glTranslatef(0,j,i);
-				cube->RenderGeometry();
-				glPopMatrix();
-			}
-		}
-
-
-		glPopMatrix();
 	}
+
+
 	if (teapot) {
 		// bluish metal (lead?)
 		glPushMatrix();
 		glTranslatef(-4, .5, -4);
 		glColor3f(.8, .8, .91);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_chrome_ambient);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_chrome_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, mat_chrome_shininess);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_chrome_diffuse);
+		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
 		teapot->RenderGeometry();
 		glPopMatrix();
 	}
@@ -164,6 +166,7 @@ void G308_display(){
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_red_plastic_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_red_plastic_shininess);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_red_plastic_diffuse);
+		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
 		torus->RenderGeometry();
 		glPopMatrix();
 	}
@@ -176,6 +179,7 @@ void G308_display(){
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_white_plastic_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_white_plastic_shininess);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_white_plastic_diffuse);
+		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
 		bunny->RenderGeometry();
 		glPopMatrix();
 	}
@@ -257,6 +261,7 @@ void G308_SetLight(){
 	// setup the ambient light
 	glLightfv(GL_LIGHT0, GL_POSITION, l0_direction);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_diffintensity);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, l0_specular);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, l0_ambient);
 
 	glEnable(GL_LIGHT0);
@@ -267,10 +272,10 @@ void G308_SetLight(){
 	glLightfv(GL_LIGHT1, GL_POSITION, l1_position);
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, l1_direction);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, l1_diffintensity);
-//	glLightfv(GL_LIGHT1, GL_AMBIENT, l1_ambient);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, l1_ambient);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, l1_specular);
-	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 0);
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 17.5);
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 28);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 22);
 
 	glEnable(GL_LIGHT1);
 }

@@ -252,17 +252,7 @@ void G308_Geometry::CreateGLPolyGeometry() {
 	m_glGeomListPoly = glGenLists(1);
 	glNewList(m_glGeomListPoly, GL_COMPILE);
 
-	if (texture	) {
-		glDisable(GL_COLOR_MATERIAL);
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glBindTexture(GL_TEXTURE_2D, *texture);
 
-//		int texture_location = glGetUniformLocation(mainProgram.program,"color_texture");
-//		glUniform1i(texture_location, 0);
-//		glBindTexture(GL_TEXTURE_2D,newTexture);
-
-	}
 
 
 	//Your code here
@@ -286,10 +276,7 @@ void G308_Geometry::CreateGLPolyGeometry() {
 		glEnd();
 	}
 //	glFlush();
-	if (texture){
-		glDisable(GL_TEXTURE_2D);
-		glEnable(GL_COLOR_MATERIAL);
-	}
+
 
 	glEndList();
 }
@@ -339,7 +326,19 @@ void G308_Geometry::toggleMode() {
 void G308_Geometry::RenderGeometry() {
 
 	if (mode == G308_SHADE_POLYGON) {
+		if (texture	) {
+			glDisable(GL_COLOR_MATERIAL);
+			glEnable(GL_TEXTURE_2D);
+			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//			glUniform1i(glGetUniformLocation(program, "tex"), *texture);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, *texture);
+		}
 		glCallList(m_glGeomListPoly);
+		if (texture){
+			glDisable(GL_TEXTURE_2D);
+			glEnable(GL_COLOR_MATERIAL);
+		}
 	} else if (mode == G308_SHADE_WIREFRAME) {
 		glCallList(m_glGeomListWire);
 	} else {
