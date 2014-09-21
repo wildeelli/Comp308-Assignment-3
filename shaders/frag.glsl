@@ -6,6 +6,8 @@ uniform int hasTex;
 varying vec3 N;
 varying vec3 v;
 
+const float cos_outer_cone_angle = 0.8;
+
 void main (void)  
 {  
    // direction vector from surface to light
@@ -31,28 +33,27 @@ void main (void)
    Ispec = clamp(Ispec, 0.0, 1.0); 
    
    total = Iamb + Idiff + Ispec;
-   // The second light, a spot light
+   // The second light, a dual cone spot light - courtesy of http://www.ozone3d.net/tutorials/glsl_lighting_phong_p3.php
    L = normalize(gl_LightSource[1].position.xyz - v);
-   R = normalize(-reflect(L,N));
-   float angle = max(dot( normalize(gl_LightSource[1].spotDirection), -L), 0);
+   vec3 D = normalize(gl_LightSource[1].spotDirection);
    
-   float attenuation = 1.0 * (gl_LightSource[1].constantAttenuation +
-                    gl_LightSource[1].linearAttenuation * dist +
-                    gl_LightSource[1].quadraticAttenuation * dist * dist);
-					// float attenuation = 1.0;
-    if (angle < cos(radians(gl_LightSource[1].spotCutoff))){
-      attenuation = 0.0;
-   } else {
-      attenuation = attenuation * pow(angle, gl_LightSource[1].spotExponent );
-	  // attenuation = 1.0;
+   float cos_cur_angle = dot(-L, D);
+   float cos_inner_cone_angle = gl_LightSource[1].spotCosCutoff;
+   
+   float cos_inner_minus_outer_angle = cos_inner_cone_angle - cos_outer_cone_angle;
+   
+   float spot = 0.0;
+   spot = clamp((cos_cur_angle - cos_outer_cone_angle) / cos_inner_minus_outer_angle, 0.0, 1.0);
+   
+   float lambert = max(dot(N,L), 0.0);
+   if (lambert > 0.0){
+      total += gl_LightSource[1].diffuse * gl_FrontMaterial.diffuse * lambert * spot;
+	  R = normalize(-reflect(L,N)); 
+	  
+	  float spec = pow( max(dot(R, E), 0.0), gl_FrontMaterial.shininess);
+	  total += gl_LightSource[1].specular * gl_FrontMaterial.specular * spec * spot;
    }
-   // total += attenuation * gl_FrontLightProduct[1].diffuse * max(dot(N,L), 0.0);
-   // total += attenuation * gl_FrontLightProduct[1].specular * pow(max(dot(R,E),0.0),0.3*gl_FrontMaterial.shininess);
-    // total = vec4(angle, angle, angle, 1.0);
-   total += attenuation * gl_FrontMaterial.diffuse * gl_LightSource[1].diffuse * max(0.0, dot(N, L));
-   total += attenuation * gl_FrontMaterial.specular * pow(max(dot(N,L),0.0),0.3*gl_FrontMaterial.shininess);
-   // if (angle < cos(radians(gl_LightSource[1].spotCutoff))) total.y = 1;
-   
+
    // The third light, a directional light
    
    // write Total Color:  
