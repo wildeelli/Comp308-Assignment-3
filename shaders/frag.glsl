@@ -36,16 +36,22 @@ void main (void)
    R = normalize(-reflect(L,N));
    float angle = max(dot( normalize(gl_LightSource[1].spotDirection), -L), 0);
    
-   float attenuation = 1.0 / (gl_LightSource[1].constantAttenuation +
+   float attenuation = 1.0 * (gl_LightSource[1].constantAttenuation +
                     gl_LightSource[1].linearAttenuation * dist +
                     gl_LightSource[1].quadraticAttenuation * dist * dist);
-   if (angle < cos(radians(gl_LightSource[1].spotCutoff))){
+					// float attenuation = 1.0;
+    if (angle < cos(radians(gl_LightSource[1].spotCutoff))){
       attenuation = 0.0;
    } else {
-      attenuation = attenuation * pow(angle, gl_LightSource[1].spotExponent);
+      attenuation = attenuation * pow(angle, gl_LightSource[1].spotExponent );
+	  // attenuation = 1.0;
    }
-   total += attenuation * gl_FrontLightProduct[1].diffuse * max(dot(N,L), 0.0);
-   total += attenuation * gl_FrontLightProduct[1].specular * pow(max(dot(R,E),0.0),0.3*gl_FrontMaterial.shininess);
+   // total += attenuation * gl_FrontLightProduct[1].diffuse * max(dot(N,L), 0.0);
+   // total += attenuation * gl_FrontLightProduct[1].specular * pow(max(dot(R,E),0.0),0.3*gl_FrontMaterial.shininess);
+    // total = vec4(angle, angle, angle, 1.0);
+   total += attenuation * gl_FrontMaterial.diffuse * gl_LightSource[1].diffuse * max(0.0, dot(N, L));
+   total += attenuation * gl_FrontMaterial.specular * pow(max(dot(N,L),0.0),0.3*gl_FrontMaterial.shininess);
+   // if (angle < cos(radians(gl_LightSource[1].spotCutoff))) total.y = 1;
    
    // The third light, a directional light
    
@@ -56,4 +62,5 @@ void main (void)
    } else {
       gl_FragColor = gl_FrontLightModelProduct.sceneColor + total;
    }
+   // gl_FragColor = total;
 }
