@@ -66,11 +66,10 @@ void main (void)
    // The third light, a directional light
    
    // write Total Color:  
+   gl_FragColor = gl_FrontLightModelProduct.sceneColor + total;
    if (hasTex == 1){ // if there is a texture, merge it 
       //gl_FragColor = texture2D(tex, gl_TexCoord[0].st) * ( gl_FrontLightModelProduct.sceneColor + Iamb + texture2D(tex, gl_TexCoord[0].st) *Idiff + Ispec);
 	  gl_FragColor = texture2D(tex, gl_TexCoord[0].st) * ( gl_FrontLightModelProduct.sceneColor + total);
-   } else {
-      gl_FragColor = gl_FrontLightModelProduct.sceneColor + total;
-   }
+   } 
    // gl_FragColor = total;
 }
