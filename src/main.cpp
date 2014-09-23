@@ -38,6 +38,8 @@ G308_Geometry* bunny = NULL;
 
 GLuint shaderID;
 
+GLUquadric* q;
+
 clock_t lastframe;
 
 void G308_Idle(){
@@ -98,12 +100,15 @@ void G308_display(){
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR) {
 		printf("%s\n", gluErrorString(err));
+//		exit(0);
 	}
 
 	if (shaderID) {
 		glUseProgram(shaderID);
 		glUniform1i(glGetUniformLocation(shaderID, "tex"), 0);
 		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
+		glUniform1i(glGetUniformLocation(shaderID, "norm"), 1);
+		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 0);
 	}
 
 	G308_SetCamera();
@@ -149,8 +154,10 @@ void G308_display(){
 
 		glTranslatef(4.5, 2.5, -4.5);
 		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 1);
+		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 1);
 		cube->RenderGeometry();
 		glPopMatrix();
+		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 0);
 	}
 
 
@@ -176,9 +183,11 @@ void G308_display(){
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_red_plastic_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_red_plastic_shininess);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_red_plastic_diffuse);
+		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 1);
 		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
 		torus->RenderGeometry();
 		glPopMatrix();
+		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 0);
 	}
 	if (bunny) {
 		// white bone china
@@ -194,12 +203,44 @@ void G308_display(){
 		glPopMatrix();
 	}
 
+	glPushMatrix();
+
+	glTranslatef(l0_position[0], l0_position[1], l0_position[2]);
+	glColor3f(1, 1, 1);
+
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, l0_ambient);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, l0_specular);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, l0_ambient);
+
+	gluSphere(q, .2, 256, 256);
+	gluQuadricNormals(q, GLU_SMOOTH);
+	gluQuadricOrientation(q, GLU_INSIDE);
+	glShadeModel(GL_FLAT);
+
+	glBegin( GL_TRIANGLES );
+	glNormal3f(0,-1,0);
+	glVertex3f(0,0,0);
+	glVertex3f(0, 0.66,-0.33);
+	glVertex3f(0, 0.66,0.33);
+	glNormal3f(0,10,0);
+	glVertex3f(0,0,0);
+	glVertex3f(0,-0.66,-0.33);
+	glVertex3f(0,-0.66,0.33);
+	glEnd();
+	glBegin( GL_LINES );
+	glVertex3f(0,0,0);
+	glVertex3f(0,-5,0);
+	glEnd();
+
+
+	glPopMatrix();
+
 	glPopMatrix();
 
 	// and ends here
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
 	glDisable(GL_COLOR_MATERIAL);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
 
 	glutSwapBuffers();
 }
@@ -227,7 +268,7 @@ void G308_LoadFiles(){
 
 	table = new G308_Geometry;
 	table->ReadOBJ("assets/Table.obj");
-	table->ReadTexture("assets/wood.jpg");
+	table->ReadTexture("assets/wood.jpg", TEXTURE, 3);
 	table->CreateGLPolyGeometry();
 	table->CreateGLWireGeometry();
 //	table->toggleMode();
@@ -238,7 +279,8 @@ void G308_LoadFiles(){
 
 	cube = new G308_Geometry;
 	cube->ReadOBJ("assets/Box.obj");
-	cube->ReadTexture("assets/brick.jpg");
+	cube->ReadTexture("assets/brick.jpg", TEXTURE, 3);
+	cube->ReadTexture("assets/brick-normal.jpg", NORMAL, 3);
 	cube->CreateGLPolyGeometry();
 	cube->CreateGLWireGeometry();
 //	cube->toggleMode();
@@ -250,11 +292,14 @@ void G308_LoadFiles(){
 
 	torus = new G308_Geometry;
 	torus->ReadOBJ("assets/Torus.obj");
+	torus->ReadTexture("assets/normal.jpg", NORMAL, 1);
 	torus->CreateGLPolyGeometry();
 
 	bunny = new G308_Geometry;
 	bunny->ReadOBJ("assets/Bunny.obj");
 	bunny->CreateGLPolyGeometry();
+
+	q = gluNewQuadric();
 
 	printf("\n");
 
@@ -288,7 +333,7 @@ void G308_SetLight(){
 	glLightfv(GL_LIGHT1, GL_AMBIENT, l1_ambient);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, l1_specular);
 	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 28);
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 4);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25);
 
 	glEnable(GL_LIGHT1);
 

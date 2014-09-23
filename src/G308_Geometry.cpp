@@ -35,6 +35,7 @@ G308_Geometry::G308_Geometry(void) {
 	m_nNumPoint = m_nNumUV = m_nNumPolygon = m_nNumNormal = 0;
 	m_glGeomListPoly = m_glGeomListWire = 0;
 	texture = NULL;
+	normal = NULL;
 }
 
 G308_Geometry::~G308_Geometry(void) {
@@ -193,7 +194,7 @@ void G308_Geometry::ReadOBJ(const char *filename) {
 // [Assignment4]
 // Create a 2D GL texture from the file given
 //--------------------------------------------------------------
-void G308_Geometry::ReadTexture(const char* filename) {
+void G308_Geometry::ReadTexture(const char* filename, int type, GLfloat scale) {
 	//Your code here
 	unsigned int i;
 	for (i = 0; i < strlen(filename); i++) {
@@ -205,7 +206,7 @@ void G308_Geometry::ReadTexture(const char* filename) {
 	strcpy(extension, &filename[i + 1]);
 	//printf(extension);
 
-	texture = new GLuint;
+	GLuint* tex = new GLuint;
 	TextureInfo t;
 
 	if (strcmp(extension, "jpg") == 0 || strcmp(extension, "jpeg") == 0)
@@ -220,8 +221,8 @@ void G308_Geometry::ReadTexture(const char* filename) {
 	//Init the texture storage, and set some parameters.
 	//(I high recommend reading up on these commands)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glGenTextures(1, texture);
-	glBindTexture(GL_TEXTURE_2D, *texture);
+	glGenTextures(1, tex);
+	glBindTexture(GL_TEXTURE_2D, *tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -237,6 +238,12 @@ void G308_Geometry::ReadTexture(const char* filename) {
 	}
 	//Once the texture has been loaded by GL, we don't need this anymore.
 	free(t.textureData);
+	if (type==TEXTURE){
+		texture = tex;
+	} else if (type==NORMAL){
+		normal = tex;
+	}
+	textureScale = scale;
 }
 
 //--------------------------------------------------------------
@@ -261,17 +268,17 @@ void G308_Geometry::CreateGLPolyGeometry() {
 		glBegin( GL_TRIANGLES );
 			glNormal3fv(&m_pNormalArray[t.n1].x);
 //			if (texture) glTexCoord2fv(&m_pUVArray[t.t1].u);
-			if (texture) glTexCoord2f(m_pUVArray[t.t1].u*3., m_pUVArray[t.t1].v*3.);
+			if (texture || normal) glTexCoord2f(m_pUVArray[t.t1].u*textureScale, m_pUVArray[t.t1].v*textureScale);
 			glVertex3fv(&m_pVertexArray[t.v1].x);
 
 			glNormal3fv(&m_pNormalArray[t.n2].x);
 //			if (texture) glTexCoord2fv(&m_pUVArray[t.t2].u);
-			if (texture) glTexCoord2f(m_pUVArray[t.t2].u*3., m_pUVArray[t.t2].v*3.);
+			if (texture || normal) glTexCoord2f(m_pUVArray[t.t2].u*textureScale, m_pUVArray[t.t2].v*textureScale);
 			glVertex3fv(&m_pVertexArray[t.v2].x);
 
 			glNormal3fv(&m_pNormalArray[t.n3].x);
 //			if (texture) glTexCoord2fv(&m_pUVArray[t.t3].u);
-			if (texture) glTexCoord2f(m_pUVArray[t.t3].u*3., m_pUVArray[t.t3].v*3.);
+			if (texture || normal) glTexCoord2f(m_pUVArray[t.t3].u*textureScale, m_pUVArray[t.t3].v*textureScale);
 			glVertex3fv(&m_pVertexArray[t.v3].x);
 		glEnd();
 	}
@@ -326,16 +333,21 @@ void G308_Geometry::toggleMode() {
 void G308_Geometry::RenderGeometry() {
 
 	if (mode == G308_SHADE_POLYGON) {
-		if (texture	) {
+		if (texture || normal){
 			glDisable(GL_COLOR_MATERIAL);
 			glEnable(GL_TEXTURE_2D);
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-//			glUniform1i(glGetUniformLocation(program, "tex"), *texture);
+		if (texture	) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, *texture);
 		}
+		if (normal){
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, *normal);
+		}
+		}
 		glCallList(m_glGeomListPoly);
-		if (texture){
+		if (texture || normal ){
 			glDisable(GL_TEXTURE_2D);
 			glEnable(GL_COLOR_MATERIAL);
 		}

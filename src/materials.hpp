@@ -10,6 +10,9 @@
 #ifndef MATERIALS_HPP_
 #define MATERIALS_HPP_
 
+// not sure why i'm putting this here, oh well
+#define PI 3.141592653589
+
 GLfloat mat_zero[] = {0,0,0,1};
 
 GLfloat mat_red_plastic_ambient[] = {0,0,0,1};
@@ -56,7 +59,7 @@ GLfloat mat_wood_diffuse[] = { .61424, .04136, .04136, 1 };
 GLfloat mat_wood_specular[] = { .727811, .626959, .626959, 1};
 GLfloat mat_wood_shininess[] = { 76.8 };
 
-GLfloat l0_position[] = { -6.0f, 10.0f, 7.0f, 1.0f };
+GLfloat l0_position[] = { -4.0f, 7.0f, 5.0f, 1.0f };
 GLfloat l0_diffintensity[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 GLfloat l0_specular[] = { .5f, .5f, .5f, 1.0f };
 //GLfloat l0_diffintensity[] = { 0.9f, 0.9f, 0.9f, 1.0f };

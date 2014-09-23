@@ -17,6 +17,9 @@
 
 #pragma once
 
+#define TEXTURE 0
+#define NORMAL 2
+
 #include "define.h"
 #include <GL/glut.h>
 
@@ -42,13 +45,16 @@ private:
 	int m_glGeomListWire;	// Display List for Wireframe
 
 	GLuint *texture;
+	GLuint *normal;
+
+	GLfloat textureScale;
 
 public:
 	G308_Geometry(void);
 	~G308_Geometry(void);
 
 	void ReadOBJ(const char* filename);
-	void ReadTexture(const char* filename);
+	void ReadTexture(const char* filename, int type, GLfloat scale);
 
 	void CreateGLPolyGeometry(); // [Assignment5] Create GL Display List for Polygon Geometry, using textures!
 	void CreateGLWireGeometry(); // Already written for you, this time.
