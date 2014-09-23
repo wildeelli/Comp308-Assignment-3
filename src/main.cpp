@@ -23,6 +23,7 @@ void G308_Reshape(int w, int h);
 void G308_display();
 void G308_SetCamera();
 void G308_SetLight();
+void G308_Idle();
 
 void G308_LoadFiles();
 
@@ -37,6 +38,11 @@ G308_Geometry* bunny = NULL;
 
 GLuint shaderID;
 
+clock_t lastframe;
+
+void G308_Idle(){
+	glutPostRedisplay();
+}
 
 int main(int argc, char** argv){
 	clock_t start = clock();
@@ -47,7 +53,7 @@ int main(int argc, char** argv){
 
 	glutDisplayFunc(G308_display);
 	glutReshapeFunc(G308_Reshape);
-//	glutIdleFunc(idle);
+	glutIdleFunc(G308_Idle);
 //	glutMouseFunc(mouseFunc);
 
 	glewInit();
@@ -79,6 +85,10 @@ int main(int argc, char** argv){
 }
 
 void G308_display(){
+	 char* title = new char[64];
+	sprintf(title, "Comp308 Assignment 3 - fps: %.2f", 1./(float(clock() - lastframe )/CLOCKS_PER_SEC));
+	lastframe = clock();
+	glutSetWindowTitle(title);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
@@ -137,7 +147,7 @@ void G308_display(){
 		glScalef(1.2, 1.2, 1.2);
 		glColor3f(1,1,1);
 
-		glTranslatef(4.5, 2, -4.5);
+		glTranslatef(4.5, 2.5, -4.5);
 		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 1);
 		cube->RenderGeometry();
 		glPopMatrix();
@@ -149,10 +159,10 @@ void G308_display(){
 		glPushMatrix();
 		glTranslatef(-4, .5, -4);
 		glColor3f(.8, .8, .91);
-		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_chrome_ambient);
-		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_chrome_specular);
-		glMaterialfv(GL_FRONT, GL_SHININESS, mat_chrome_shininess);
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_chrome_diffuse);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_psilver_ambient);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_psilver_specular);
+		glMaterialfv(GL_FRONT, GL_SHININESS, mat_psilver_shininess);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_psilver_diffuse);
 		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
 		teapot->RenderGeometry();
 		glPopMatrix();
@@ -259,10 +269,13 @@ void G308_SetLight(){
 	// setup the global light
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, mat_zero);
 	// setup the ambient light
-	glLightfv(GL_LIGHT0, GL_POSITION, l0_direction);
+
+//	GLfloat l0_position[] = {  -6.0f, 10.0f, 7.0f, 1.0f  };
+
+	glLightfv(GL_LIGHT0, GL_POSITION, l0_position);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_diffintensity);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, l0_specular);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, l0_ambient);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, mat_zero);
 
 	glEnable(GL_LIGHT0);
 //	glDisable(GL_LIGHT0);
@@ -275,9 +288,13 @@ void G308_SetLight(){
 	glLightfv(GL_LIGHT1, GL_AMBIENT, l1_ambient);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, l1_specular);
 	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 28);
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 22);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 4);
 
 	glEnable(GL_LIGHT1);
+
+	// setup the directional light
+
+//	glLightfv(GL_LIGHT2, gl)
 }
 
 

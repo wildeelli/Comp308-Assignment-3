@@ -32,13 +32,13 @@ void main (void)
    vec4 Ispec = gl_FrontLightProduct[0].specular * pow(max(dot(R,E),0.0),0.3*gl_FrontMaterial.shininess);
    Ispec = clamp(Ispec, 0.0, 1.0); 
    
-   total = Iamb + Idiff + Ispec;
+   //total = Iamb + Idiff + Ispec;
    // The second light, a dual cone spot light - courtesy of http://www.ozone3d.net/tutorials/glsl_lighting_phong_p3.php
    L = normalize(gl_LightSource[1].position.xyz - v);
    vec3 D = normalize(gl_LightSource[1].spotDirection);
    
    float cos_cur_angle = dot(-L, D);
-   float cos_inner_cone_angle = gl_LightSource[1].spotCosCutoff;
+   float cos_inner_cone_angle = cos(radians(gl_LightSource[1].spotCutoff));
    
    float cos_inner_minus_outer_angle = cos_inner_cone_angle - cos_outer_cone_angle;
    
@@ -47,11 +47,11 @@ void main (void)
    
    float lambert = max(dot(N,L), 0.0);
    if (lambert > 0.0){
-      total += gl_LightSource[1].diffuse * gl_FrontMaterial.diffuse * lambert * spot;
+      total += clamp(gl_LightSource[1].diffuse * gl_FrontMaterial.diffuse * lambert * spot, 0.0, 1.0);
 	  R = normalize(-reflect(L,N)); 
 	  
 	  float spec = pow( max(dot(R, E), 0.0), gl_FrontMaterial.shininess);
-	  total += gl_LightSource[1].specular * gl_FrontMaterial.specular * spec * spot;
+	  total += clamp(gl_LightSource[1].specular * gl_FrontMaterial.specular * spec * spot, 0.0, 1.0);
    }
 
    // The third light, a directional light
