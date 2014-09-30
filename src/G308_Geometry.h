@@ -56,7 +56,7 @@ public:
 	void ReadOBJ(const char* filename);
 	void ReadTexture(const char* filename, int type, GLfloat scale);
 
-	void CreateGLPolyGeometry(); // [Assignment5] Create GL Display List for Polygon Geometry, using textures!
+	void CreateGLPolyGeometry(GLuint shaderID); // [Assignment5] Create GL Display List for Polygon Geometry, using textures!
 	void CreateGLWireGeometry(); // Already written for you, this time.
 
 	void RenderGeometry();     // mode : G308_SHADE_POLYGON, G308_SHADE_WIREFRAME

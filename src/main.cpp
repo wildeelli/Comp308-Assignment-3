@@ -5,15 +5,19 @@
  *      Author: Elliot Wilde
  */
 
+//#define GL_ARB_debug_output
 #include <stdio.h>
 #include <stdlib.h>
 #include <gl/glew.h>
 #include <gl/glut.h>
+#include <gl/freeglut.h>
 #include <ctime>
 #include "define.h"
 #include "G308_Geometry.h"
 #include "materials.hpp"
 #include "loadShader.h"
+#include <string>
+#include "Log.hpp"
 
 GLuint g_mainWnd;
 GLuint g_nWinWidth = G308_WIN_WIDTH;
@@ -26,6 +30,10 @@ void G308_SetLight();
 void G308_Idle();
 
 void G308_LoadFiles();
+
+struct gl_error{
+
+};
 
 G308_Geometry* table = NULL;
 G308_Geometry* sphere = NULL;
@@ -42,21 +50,127 @@ GLUquadric* q;
 
 clock_t lastframe;
 
+using namespace std;
+using namespace gecom;
+
 void G308_Idle(){
-	glutPostRedisplay();
+	//	glutPostRedisplay();
+}
+
+void APIENTRY callbackDebugGL(
+		GLenum source,
+		GLenum type,
+		GLuint id,
+		GLenum severity,
+		GLsizei length,
+		const GLchar *message,
+		void *userParam
+){
+	// enum documentation:
+	// https://www.opengl.org/sdk/docs/man4/html/glDebugMessageControl.xhtml
+	// message source within GL -> log source
+	string log_source = "GL";
+	switch (source) {
+	case GL_DEBUG_SOURCE_API:
+		log_source = "GL:API";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		log_source = "GL:Window";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		log_source = "GL:Shader";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		log_source = "GL:ThirdParty";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION:
+		log_source = "GL:App";
+		break;
+	case GL_DEBUG_SOURCE_OTHER:
+		log_source = "GL:Other";
+		break;
+	default:
+		break;
+	}
+	// piecewise construct log message
+	auto logs = log(log_source);
+	bool exceptional = false;
+	// message type -> log type
+	switch (type) {
+	case GL_DEBUG_TYPE_ERROR:
+		logs.error();
+		logs << "Error";
+		exceptional = true;
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		logs.warning();
+		logs << "Deprecated Behaviour";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		logs.warning();
+		logs << "Undefined Behaviour";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		logs.warning();
+		logs << "Portability";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		logs.warning();
+		logs << "Performance";
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		logs << "Marker";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		logs << "Push Group";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		logs << "Pop Group";
+		break;
+	case GL_DEBUG_TYPE_OTHER:
+		logs << "Other";
+		break;
+	}
+	// severity -> log verbosity
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		logs % 3;
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		logs % 2;
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		logs % 1;
+		break;
+	case GL_DEBUG_SEVERITY_HIGH:
+		logs % 0;
+		break;
+	}
+	// actual message. id = as returned by glGetError()
+	ostringstream oss;
+	oss << " [" << id << "] : " << message;
+	logs << oss.str();
+#ifndef GECOM_GL_NO_EXCEPTIONS
+	if (exceptional) {
+		throw gl_error(); //oss.str());
+	}
+#endif
 }
 
 int main(int argc, char** argv){
 	clock_t start = clock();
 	glutInit(&argc, argv);
+
 	glutInitDisplayMode( GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA );
+	glutInitContextFlags(GLUT_DEBUG);
 	glutInitWindowSize(g_nWinWidth, g_nWinHeight);
-	g_mainWnd = glutCreateWindow("COMP308 MidTerm Project");
+	g_mainWnd = glutCreateWindow("COMP308 Assignment 3");
 
 	glutDisplayFunc(G308_display);
 	glutReshapeFunc(G308_Reshape);
 	glutIdleFunc(G308_Idle);
-//	glutMouseFunc(mouseFunc);
+	//	glutMouseFunc(mouseFunc);
+	//	glDebugMessageCallback
 
 	glewInit();
 
@@ -66,6 +180,13 @@ int main(int argc, char** argv){
 		printf("OpenGL 2.0 not supported\n");
 		exit(1);
 	}
+	if (glewIsExtensionSupported("GL_ARB_debug_output")){
+		printf("GL Debug support found\n");
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallbackARB(callbackDebugGL, NULL);
+	}
+
+	cout << glGetString(GL_VERSION) << endl;
 
 	G308_SetCamera();
 	G308_SetLight();
@@ -87,7 +208,7 @@ int main(int argc, char** argv){
 }
 
 void G308_display(){
-	 char* title = new char[64];
+	char* title = new char[64];
 	sprintf(title, "Comp308 Assignment 3 - fps: %.2f", 1./(float(clock() - lastframe )/CLOCKS_PER_SEC));
 	lastframe = clock();
 	glutSetWindowTitle(title);
@@ -100,7 +221,7 @@ void G308_display(){
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR) {
 		printf("%s\n", gluErrorString(err));
-//		exit(0);
+		//		exit(0);
 	}
 
 	if (shaderID) {
@@ -111,23 +232,25 @@ void G308_display(){
 		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 0);
 	}
 
+//	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 9001);
+
 	G308_SetCamera();
-//	glColor3f(.8, .8, .2);
+	glColor3f(.8, .8, .2);
 
 	glPushMatrix();
 	// do arcball for camera control?
 
-//	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	//	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
 
 	if (table) {
 		// wood with wood.jpg as texture map
 		glPushMatrix();
-//		glRotatef(180, 1,0,0);
-//		glColor3f(1,1,1);
-//		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_wood_ambient);
-//		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_wood_specular);
-//		glMaterialfv(GL_FRONT, GL_SHININESS, mat_wood_shininess);
-//		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_wood_diffuse);
+		//		glRotatef(180, 1,0,0);
+		//		glColor3f(1,1,1);
+		//		glMaterialfv(GL_FRONT, GL_AMBIENT, mat_wood_ambient);
+		//		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_wood_specular);
+		//		glMaterialfv(GL_FRONT, GL_SHININESS, mat_wood_shininess);
+		//		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_wood_diffuse);
 		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 1);
 		table->RenderGeometry();
 		glPopMatrix();
@@ -183,11 +306,11 @@ void G308_display(){
 		glMaterialfv(GL_FRONT, GL_SPECULAR, mat_red_plastic_specular);
 		glMaterialfv(GL_FRONT, GL_SHININESS, mat_red_plastic_shininess);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_red_plastic_diffuse);
-		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 1);
+				glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 1);
 		glUniform1i(glGetUniformLocation(shaderID, "hasTex"), 0);
 		torus->RenderGeometry();
 		glPopMatrix();
-		glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 0);
+				glUniform1i(glGetUniformLocation(shaderID, "hasNorm"), 0);
 	}
 	if (bunny) {
 		// white bone china
@@ -260,62 +383,62 @@ void G308_SetCamera(){
 	glLoadIdentity();
 
 	gluLookAt(30.0, 20.0, 45.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-//	gluLookAt(50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	//	gluLookAt(50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 }
 
 void G308_LoadFiles(){
 
+	shaderID = LoadShaders("shaders/vert.glsl", "shaders/frag.glsl");
+	printf("\n");
 
 	table = new G308_Geometry;
 	table->ReadOBJ("assets/Table.obj");
 	table->ReadTexture("assets/wood.jpg", TEXTURE, 3);
-	table->CreateGLPolyGeometry();
+	table->CreateGLPolyGeometry(0);
 	table->CreateGLWireGeometry();
-//	table->toggleMode();
+	//	table->toggleMode();
 
 	sphere = new G308_Geometry;
 	sphere->ReadOBJ("assets/Sphere.obj");
-	sphere->CreateGLPolyGeometry();
+	sphere->CreateGLPolyGeometry(0);
 
 	cube = new G308_Geometry;
 	cube->ReadOBJ("assets/Box.obj");
 	cube->ReadTexture("assets/brick.jpg", TEXTURE, 3);
 	cube->ReadTexture("assets/brick-normal.jpg", NORMAL, 3);
-	cube->CreateGLPolyGeometry();
+	cube->CreateGLPolyGeometry(shaderID);
 	cube->CreateGLWireGeometry();
-//	cube->toggleMode();
+	//	cube->toggleMode();
 
 
 	teapot = new G308_Geometry;
 	teapot->ReadOBJ("assets/Teapot.obj");
-	teapot->CreateGLPolyGeometry();
+	teapot->CreateGLPolyGeometry(0);
 
 	torus = new G308_Geometry;
 	torus->ReadOBJ("assets/Torus.obj");
-	torus->ReadTexture("assets/normal.jpg", NORMAL, 1);
-	torus->CreateGLPolyGeometry();
+		torus->ReadTexture("assets/normal.jpg", NORMAL, 1);
+	torus->CreateGLPolyGeometry(shaderID);
 
 	bunny = new G308_Geometry;
 	bunny->ReadOBJ("assets/Bunny.obj");
-	bunny->CreateGLPolyGeometry();
+	bunny->CreateGLPolyGeometry(0);
 
 	q = gluNewQuadric();
 
-	printf("\n");
 
-	shaderID = LoadShaders("shaders/vert.glsl", "shaders/frag.glsl");
 }
 
 void G308_SetLight(){
-//	float direction[] = { 1.0f, 1.0f, 1.0f, 0.0f };
-//	float diffintensity[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-//	float ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	//	float direction[] = { 1.0f, 1.0f, 1.0f, 0.0f };
+	//	float diffintensity[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	//	float ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 
 	// setup the global light
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, mat_zero);
 	// setup the ambient light
 
-//	GLfloat l0_position[] = {  -6.0f, 10.0f, 7.0f, 1.0f  };
+	//	GLfloat l0_position[] = {  -6.0f, 10.0f, 7.0f, 1.0f  };
 
 	glLightfv(GL_LIGHT0, GL_POSITION, l0_position);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_diffintensity);
@@ -323,7 +446,7 @@ void G308_SetLight(){
 	glLightfv(GL_LIGHT0, GL_AMBIENT, mat_zero);
 
 	glEnable(GL_LIGHT0);
-//	glDisable(GL_LIGHT0);
+	//	glDisable(GL_LIGHT0);
 
 	// setup the spot light
 
@@ -339,7 +462,7 @@ void G308_SetLight(){
 
 	// setup the directional light
 
-//	glLightfv(GL_LIGHT2, gl)
+	//	glLightfv(GL_LIGHT2, gl)
 }
 
 

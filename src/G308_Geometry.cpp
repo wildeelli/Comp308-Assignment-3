@@ -23,6 +23,10 @@
 #include "define.h"
 #include "G308_Geometry.h"
 #include "G308_ImageLoader.h"
+#include <glm/glm.hpp>
+#include <glm/common.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 G308_Geometry::G308_Geometry(void) {
 	m_pVertexArray = NULL;
@@ -251,7 +255,7 @@ void G308_Geometry::ReadTexture(const char* filename, int type, GLfloat scale) {
 // Fill the following function to create display list
 // of the obj file to show it as polygon, using texture and normal information (if any)
 //--------------------------------------------------------------
-void G308_Geometry::CreateGLPolyGeometry() {
+void G308_Geometry::CreateGLPolyGeometry(GLuint shaderID) {
 	if (m_glGeomListPoly != 0)
 		glDeleteLists(m_glGeomListPoly, 1);
 
@@ -259,12 +263,36 @@ void G308_Geometry::CreateGLPolyGeometry() {
 	m_glGeomListPoly = glGenLists(1);
 	glNewList(m_glGeomListPoly, GL_COMPILE);
 
-
+	GLint T = glGetUniformLocation(shaderID, "T");
+	GLint B = glGetUniformLocation(shaderID, "B");
 
 
 	//Your code here
 	for (int i = 0; i < m_nNumPolygon; i++){
 		G308_Triangle t = m_pTriangles[i];
+			if (normal && shaderID){
+				glm::vec3 v0 = (glm::vec3)(m_pVertexArray[t.v1].x);
+				glm::vec3 v1 = (glm::vec3)(m_pVertexArray[t.v2].x);
+				glm::vec3 v2 = (glm::vec3)(m_pVertexArray[t.v3].x);
+
+				glm::vec2 uv0 = (glm::vec2)(m_pUVArray[t.t1].u);
+				glm::vec2 uv1 = (glm::vec2)(m_pUVArray[t.t2].u);
+				glm::vec2 uv2 = (glm::vec2)(m_pUVArray[t.t3].u);
+
+				glm::vec3 deltaPos1 = v1-v0;
+				glm::vec3 deltaPos2 = v2-v0;
+
+				glm::vec2 deltaUV1 = uv1 - uv0;
+				glm::vec2 deltaUV2 = uv2 - uv0;
+
+				float r = 1.f/ (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+				glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)*r;
+				glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x)*r;
+
+				glUniform3fv(T, 1, &tangent[0]);
+				glUniform3fv(B, 1, &bitangent[0]);
+
+			}
 		glBegin( GL_TRIANGLES );
 			glNormal3fv(&m_pNormalArray[t.n1].x);
 //			if (texture) glTexCoord2fv(&m_pUVArray[t.t1].u);
@@ -280,6 +308,8 @@ void G308_Geometry::CreateGLPolyGeometry() {
 //			if (texture) glTexCoord2fv(&m_pUVArray[t.t3].u);
 			if (texture || normal) glTexCoord2f(m_pUVArray[t.t3].u*textureScale, m_pUVArray[t.t3].v*textureScale);
 			glVertex3fv(&m_pVertexArray[t.v3].x);
+
+
 		glEnd();
 	}
 //	glFlush();

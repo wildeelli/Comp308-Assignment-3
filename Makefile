@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Wextra -pedantic
+CFLAGS = -Wall -Wextra -pedantic -std=c++11 -pthread
 IPATH = -I/usr/X11/include -I/usr/pkg/include
 LPATH = -L/usr/X11/lib -L/usr/pkg/lib
 LDPATH = -Wl,-R/usr/pkg/lib 
@@ -11,7 +11,7 @@ SRC = ./src/
 
 all: $(BUILD)As3
 
-$(BUILD)As3: $(BUILD)G308_ImageLoader.o $(BUILD)main.o $(BUILD)G308_Geometry.o $(BUILD)loadShader.o
+$(BUILD)As3: $(BUILD)G308_ImageLoader.o $(BUILD)main.o $(BUILD)G308_Geometry.o $(BUILD)loadShader.o $(BUILD)Log.o
 	$(CC) -g -o $@ $^ $(LIBS) $(LPATH) $(LDPATH)
 	
 $(BUILD)%.o:  $(SRC)%.cpp

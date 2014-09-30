@@ -59,7 +59,7 @@ GLfloat mat_wood_diffuse[] = { .61424, .04136, .04136, 1 };
 GLfloat mat_wood_specular[] = { .727811, .626959, .626959, 1};
 GLfloat mat_wood_shininess[] = { 76.8 };
 
-GLfloat l0_position[] = { -4.0f, 7.0f, 5.0f, 1.0f };
+GLfloat l0_position[] = { 4.0f, 7.0f, 5.0f, 1.0f };
 GLfloat l0_diffintensity[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 GLfloat l0_specular[] = { .5f, .5f, .5f, 1.0f };
 //GLfloat l0_diffintensity[] = { 0.9f, 0.9f, 0.9f, 1.0f };
@@ -73,5 +73,5 @@ GLfloat l1_specular[] = { 1.f, 1.f, 1.f, 1.0f };
 
 GLfloat l2_direction[] = { 0.0f, 1.0f, 1.0f, 0.0f };
 
-
+//
 #endif /* MATERIALS_HPP_ */
