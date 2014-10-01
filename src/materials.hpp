@@ -5,7 +5,7 @@
  *      Author: Elliot Wilde
  */
 
-#include <gl/glut.h>
+#include <GL/freeglut.h>
 
 #ifndef MATERIALS_HPP_
 #define MATERIALS_HPP_
@@ -65,8 +65,8 @@ GLfloat l0_specular[] = { .5f, .5f, .5f, 1.0f };
 //GLfloat l0_diffintensity[] = { 0.9f, 0.9f, 0.9f, 1.0f };
 GLfloat l0_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 
-GLfloat l1_direction[] = { -.70f, -1.0f, -.70f, 0.0f };
-GLfloat l1_position[] = { 6.0f, 10.0f, 7.0f, 1.0f };
+GLfloat l1_direction[] = { -16.0f, -10.0f, -17.0f, 0.0f };
+GLfloat l1_position[] = { 16.0f, 10.0f, 17.0f, 1.0f };
 GLfloat l1_diffintensity[] = { 0.85f, 0.85f, 0.85f, 1.0f };
 GLfloat l1_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 GLfloat l1_specular[] = { 1.f, 1.f, 1.f, 1.0f };

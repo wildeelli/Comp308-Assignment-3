@@ -8,16 +8,16 @@
 //#define GL_ARB_debug_output
 #include <stdio.h>
 #include <stdlib.h>
-#include <gl/glew.h>
-#include <gl/glut.h>
-#include <gl/freeglut.h>
+#include <GL/glew.h>
+//#include <GL/glut.h>
+#include <GL/freeglut.h>
 #include <ctime>
 #include "define.h"
 #include "G308_Geometry.h"
 #include "materials.hpp"
 #include "loadShader.h"
 #include <string>
-#include "Log.hpp"
+#include <iostream>
 
 GLuint g_mainWnd;
 GLuint g_nWinWidth = G308_WIN_WIDTH;
@@ -51,111 +51,11 @@ GLUquadric* q;
 clock_t lastframe;
 
 using namespace std;
-using namespace gecom;
 
 void G308_Idle(){
 	//	glutPostRedisplay();
 }
 
-void APIENTRY callbackDebugGL(
-		GLenum source,
-		GLenum type,
-		GLuint id,
-		GLenum severity,
-		GLsizei length,
-		const GLchar *message,
-		void *userParam
-){
-	// enum documentation:
-	// https://www.opengl.org/sdk/docs/man4/html/glDebugMessageControl.xhtml
-	// message source within GL -> log source
-	string log_source = "GL";
-	switch (source) {
-	case GL_DEBUG_SOURCE_API:
-		log_source = "GL:API";
-		break;
-	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-		log_source = "GL:Window";
-		break;
-	case GL_DEBUG_SOURCE_SHADER_COMPILER:
-		log_source = "GL:Shader";
-		break;
-	case GL_DEBUG_SOURCE_THIRD_PARTY:
-		log_source = "GL:ThirdParty";
-		break;
-	case GL_DEBUG_SOURCE_APPLICATION:
-		log_source = "GL:App";
-		break;
-	case GL_DEBUG_SOURCE_OTHER:
-		log_source = "GL:Other";
-		break;
-	default:
-		break;
-	}
-	// piecewise construct log message
-	auto logs = log(log_source);
-	bool exceptional = false;
-	// message type -> log type
-	switch (type) {
-	case GL_DEBUG_TYPE_ERROR:
-		logs.error();
-		logs << "Error";
-		exceptional = true;
-		break;
-	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-		logs.warning();
-		logs << "Deprecated Behaviour";
-		break;
-	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-		logs.warning();
-		logs << "Undefined Behaviour";
-		break;
-	case GL_DEBUG_TYPE_PORTABILITY:
-		logs.warning();
-		logs << "Portability";
-		break;
-	case GL_DEBUG_TYPE_PERFORMANCE:
-		logs.warning();
-		logs << "Performance";
-		break;
-	case GL_DEBUG_TYPE_MARKER:
-		logs << "Marker";
-		break;
-	case GL_DEBUG_TYPE_PUSH_GROUP:
-		logs << "Push Group";
-		break;
-	case GL_DEBUG_TYPE_POP_GROUP:
-		logs << "Pop Group";
-		break;
-	case GL_DEBUG_TYPE_OTHER:
-		logs << "Other";
-		break;
-	}
-	// severity -> log verbosity
-	switch (severity) {
-	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		logs % 3;
-		break;
-	case GL_DEBUG_SEVERITY_LOW:
-		logs % 2;
-		break;
-	case GL_DEBUG_SEVERITY_MEDIUM:
-		logs % 1;
-		break;
-	case GL_DEBUG_SEVERITY_HIGH:
-		logs % 0;
-		break;
-	}
-	// actual message. id = as returned by glGetError()
-	ostringstream oss;
-	oss << " [" << id << "] : " << message;
-	logs << oss.str();
-#ifndef GECOM_GL_NO_EXCEPTIONS
-	if (exceptional) {
-		throw gl_error(); //oss.str());
-	}
-#endif
-}
 
 int main(int argc, char** argv){
 	clock_t start = clock();
@@ -182,8 +82,6 @@ int main(int argc, char** argv){
 	}
 	if (glewIsExtensionSupported("GL_ARB_debug_output")){
 		printf("GL Debug support found\n");
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallbackARB(callbackDebugGL, NULL);
 	}
 
 	cout << glGetString(GL_VERSION) << endl;
@@ -352,9 +250,42 @@ void G308_display(){
 	glEnd();
 	glBegin( GL_LINES );
 	glVertex3f(0,0,0);
-	glVertex3f(0,-5,0);
+	glVertex3f(0,-150,0);
 	glEnd();
 
+
+	glPopMatrix();
+
+	glPushMatrix();
+
+	glTranslatef(l1_position[0], l1_position[1], l1_position[2]);
+	glColor3f(1.f, 1.f, 1.f);
+
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, l1_ambient);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, l1_specular);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, l1_ambient);
+
+	gluSphere(q, .2, 256, 256);
+	gluQuadricNormals(q, GLU_SMOOTH);
+	gluQuadricOrientation(q, GLU_INSIDE);
+	glShadeModel(GL_FLAT);
+
+	glBegin( GL_TRIANGLES );
+	glNormal3f(0,-1,0);
+	glVertex3f(0,0,0);
+	glVertex3f(0, 0.66,-0.33);
+	glVertex3f(0, 0.66,0.33);
+	glNormal3f(0,10,0);
+	glVertex3f(0,0,0);
+	glVertex3f(0,-0.66,-0.33);
+	glVertex3f(0,-0.66,0.33);
+	glEnd();
+	glBegin( GL_LINES );
+	glVertex3f(0,0,0);
+	glVertex3f(0,-150,0);
+	glVertex3f(0,0,0);
+	glVertex3f(l1_direction[0]*10,l1_direction[1]*10,l1_direction[2]*10);
+	glEnd();
 
 	glPopMatrix();
 
@@ -456,7 +387,7 @@ void G308_SetLight(){
 	glLightfv(GL_LIGHT1, GL_AMBIENT, l1_ambient);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, l1_specular);
 	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 28);
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 15);
 
 	glEnable(GL_LIGHT1);
 

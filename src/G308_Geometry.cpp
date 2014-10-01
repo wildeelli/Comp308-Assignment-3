@@ -2,9 +2,9 @@
 //
 // Copyright (c) 2012 Taehyun Rhee
 //
-// This software is provided 'as-is' for assignment of COMP308 
-// in ECS, Victoria University of Wellington, 
-// without any express or implied warranty. 
+// This software is provided 'as-is' for assignment of COMP308
+// in ECS, Victoria University of Wellington,
+// without any express or implied warranty.
 // In no event will the authors be held liable for any
 // damages arising from the use of this software.
 //
@@ -18,15 +18,15 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <gl/glew.h>
-#include <gl/glut.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 #include "define.h"
 #include "G308_Geometry.h"
 #include "G308_ImageLoader.h"
-#include <glm/glm.hpp>
-#include <glm/common.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include "glm/glm.hpp"
+#include "glm/common.hpp"
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
 
 G308_Geometry::G308_Geometry(void) {
 	m_pVertexArray = NULL;
