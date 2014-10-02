@@ -11,9 +11,13 @@ BUILD = ./build/
 SRC = ./src/
 
 all: $(BUILD)As3
+win: $(BUILD)As3.exe
 
 $(BUILD)As3: $(BUILD)G308_ImageLoader.o $(BUILD)main.o $(BUILD)G308_Geometry.o $(BUILD)loadShader.o
 	$(CC) -g -o $@ $^ $(LIBS-LINUX) $(LPATH) $(LDPATH)
+	
+$(BUILD)As3.exe: $(BUILD)G308_ImageLoader.o $(BUILD)main.o $(BUILD)G308_Geometry.o $(BUILD)loadShader.o
+	$(CC) -g -o $@ $^ $(LIBS) $(LPATH) $(LDPATH)
 	
 $(BUILD)%.o:  $(SRC)%.cpp
 	$(CC) $(CFLAGS) -g -c -O3 -o $@ $^ $(IPATH)
