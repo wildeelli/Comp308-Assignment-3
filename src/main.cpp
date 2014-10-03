@@ -28,12 +28,9 @@ void G308_display();
 void G308_SetCamera();
 void G308_SetLight();
 void G308_Idle();
+void G308_keyboardListener(unsigned char, int, int);
 
 void G308_LoadFiles();
-
-struct gl_error{
-
-};
 
 G308_Geometry* table = NULL;
 G308_Geometry* sphere = NULL;
@@ -49,11 +46,14 @@ GLuint shaderID;
 GLUquadric* q;
 
 clock_t lastframe;
+bool drawlights = false;
+bool spin = false;
+float rotation = 0;
 
 using namespace std;
 
 void G308_Idle(){
-	//	glutPostRedisplay();
+		glutPostRedisplay();
 }
 
 
@@ -69,8 +69,8 @@ int main(int argc, char** argv){
 	glutDisplayFunc(G308_display);
 	glutReshapeFunc(G308_Reshape);
 	glutIdleFunc(G308_Idle);
+	glutKeyboardFunc(G308_keyboardListener);
 	//	glutMouseFunc(mouseFunc);
-	//	glDebugMessageCallback
 
 	glewInit();
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 	if (glewIsExtensionSupported("GL_ARB_debug_output")){
-		printf("GL Debug support found\n");
+		printf("GL Debug support found\n"); // whoo, code stub
 	}
 
 	cout << glGetString(GL_VERSION) << endl;
@@ -134,7 +134,12 @@ void G308_display(){
 
 	G308_SetCamera();
 	glColor3f(.8, .8, .2);
+	glPushMatrix();
 
+
+	if (spin) rotation+=.1;
+	glRotatef(rotation, 0, 1, 0);
+	G308_SetLight();
 	glPushMatrix();
 	// do arcball for camera control?
 
@@ -223,72 +228,77 @@ void G308_display(){
 		bunny->RenderGeometry();
 		glPopMatrix();
 	}
-
-	glPushMatrix();
-
-	glTranslatef(l0_position[0], l0_position[1], l0_position[2]);
-	glColor3f(1, 1, 1);
-
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, l0_ambient);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, l0_specular);
-	glMaterialfv(GL_FRONT, GL_AMBIENT, l0_ambient);
-
-	gluSphere(q, .2, 256, 256);
-	gluQuadricNormals(q, GLU_SMOOTH);
-	gluQuadricOrientation(q, GLU_INSIDE);
-	glShadeModel(GL_FLAT);
-
-	glBegin( GL_TRIANGLES );
-	glNormal3f(0,-1,0);
-	glVertex3f(0,0,0);
-	glVertex3f(0, 0.66,-0.33);
-	glVertex3f(0, 0.66,0.33);
-	glNormal3f(0,10,0);
-	glVertex3f(0,0,0);
-	glVertex3f(0,-0.66,-0.33);
-	glVertex3f(0,-0.66,0.33);
-	glEnd();
-	glBegin( GL_LINES );
-	glVertex3f(0,0,0);
-	glVertex3f(0,-150,0);
-	glEnd();
-
-
 	glPopMatrix();
+	if (drawlights){
+		glPushMatrix();
 
-	glPushMatrix();
+		glTranslatef(l0_position[0], l0_position[1], l0_position[2]);
+		glColor3f(1, 1, 1);
 
-	glTranslatef(l1_position[0], l1_position[1], l1_position[2]);
-	glColor3f(1.f, 1.f, 1.f);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, l0_ambient);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, l0_specular);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, l0_ambient);
 
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, l1_ambient);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, l1_specular);
-	glMaterialfv(GL_FRONT, GL_AMBIENT, l1_ambient);
+		gluSphere(q, .2, 256, 256);
+		gluQuadricNormals(q, GLU_SMOOTH);
+		gluQuadricOrientation(q, GLU_INSIDE);
+		glShadeModel(GL_FLAT);
 
-	gluSphere(q, .2, 256, 256);
-	gluQuadricNormals(q, GLU_SMOOTH);
-	gluQuadricOrientation(q, GLU_INSIDE);
-	glShadeModel(GL_FLAT);
+		glBegin( GL_TRIANGLES );
+			glNormal3f(0,-1,0);
+			glVertex3f(0,0,0);
+			glVertex3f(0, 0.66,-0.33);
+			glVertex3f(0, 0.66,0.33);
+			glNormal3f(0,10,0);
+			glVertex3f(0,0,0);
+			glVertex3f(0,-0.66,-0.33);
+			glVertex3f(0,-0.66,0.33);
+		glEnd();
+			glBegin( GL_LINES );
+			glVertex3f(0,0,0);
+			glVertex3f(0,-150,0);
+		glEnd();
+		glPopMatrix();
 
-	glBegin( GL_TRIANGLES );
-	glNormal3f(0,-1,0);
-	glVertex3f(0,0,0);
-	glVertex3f(0, 0.66,-0.33);
-	glVertex3f(0, 0.66,0.33);
-	glNormal3f(0,10,0);
-	glVertex3f(0,0,0);
-	glVertex3f(0,-0.66,-0.33);
-	glVertex3f(0,-0.66,0.33);
-	glEnd();
-	glBegin( GL_LINES );
-	glVertex3f(0,0,0);
-	glVertex3f(0,-150,0);
-	glVertex3f(0,0,0);
-	glVertex3f(l1_direction[0]*10,l1_direction[1]*10,l1_direction[2]*10);
-	glEnd();
+		glPushMatrix();
+		glTranslatef(l1_position[0], l1_position[1], l1_position[2]);
+		glColor3f(1.f, 1.f, 1.f);
 
-	glPopMatrix();
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, l1_ambient);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, l1_specular);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, l1_ambient);
 
+		gluSphere(q, .2, 256, 256);
+		gluQuadricNormals(q, GLU_SMOOTH);
+		gluQuadricOrientation(q, GLU_INSIDE);
+		glShadeModel(GL_FLAT);
+
+		glBegin( GL_TRIANGLES );
+			glNormal3f(0,-1,0);
+			glVertex3f(0,0,0);
+			glVertex3f(0, 0.66,-0.33);
+			glVertex3f(0, 0.66,0.33);
+			glNormal3f(0,10,0);
+			glVertex3f(0,0,0);
+			glVertex3f(0,-0.66,-0.33);
+			glVertex3f(0,-0.66,0.33);
+		glEnd();
+		glBegin( GL_LINES );
+			glVertex3f(0,0,0);
+			glVertex3f(0,-150,0);
+			glVertex3f(0,0,0);
+			glVertex3f(l1_direction[0]*10,l1_direction[1]*10,l1_direction[2]*10);
+		glEnd();
+		glPopMatrix();
+
+		glPushMatrix();
+		glBegin(GL_LINES);
+		glVertex3f(0,0,0);
+		glVertex3f(l2_direction[0]*10, l2_direction[1]*10, l2_direction[2]*10);
+		glEnd();
+		glPopMatrix();
+
+	}
 	glPopMatrix();
 
 	// and ends here
@@ -348,7 +358,7 @@ void G308_LoadFiles(){
 
 	torus = new G308_Geometry;
 	torus->ReadOBJ("assets/Torus.obj");
-		torus->ReadTexture("assets/normal.jpg", NORMAL, 1);
+	torus->ReadTexture("assets/normal.jpg", NORMAL, 1);
 	torus->CreateGLPolyGeometry(shaderID);
 
 	bunny = new G308_Geometry;
@@ -357,6 +367,16 @@ void G308_LoadFiles(){
 
 	q = gluNewQuadric();
 
+
+}
+
+void G308_keyboardListener(unsigned char key, int x, int y) {
+	if (key=='t'){
+		spin = ! spin;
+	}
+	if (key=='l'){
+		drawlights = ! drawlights;
+	}
 
 }
 
@@ -390,6 +410,13 @@ void G308_SetLight(){
 	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 15);
 
 	glEnable(GL_LIGHT1);
+
+	glLightfv(GL_LIGHT2, GL_POSITION, l0_position);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, l0_diffintensity);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, l0_specular);
+	glLightfv(GL_LIGHT2, GL_AMBIENT, mat_zero);
+
+	glEnable(GL_LIGHT2);
 
 	// setup the directional light
 

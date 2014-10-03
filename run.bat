@@ -1,1 +1,2 @@
-start build\as3
+@echo off
+start build/as3

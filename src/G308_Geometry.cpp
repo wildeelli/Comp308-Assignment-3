@@ -263,34 +263,28 @@ void G308_Geometry::CreateGLPolyGeometry(GLuint shaderID) {
 	m_glGeomListPoly = glGenLists(1);
 	glNewList(m_glGeomListPoly, GL_COMPILE);
 
-	GLint T = glGetUniformLocation(shaderID, "T");
-	GLint B = glGetUniformLocation(shaderID, "B");
-
-
 	//Your code here
 	for (int i = 0; i < m_nNumPolygon; i++){
 		G308_Triangle t = m_pTriangles[i];
 			if (normal && shaderID){
-				glm::vec3 v0 = (glm::vec3)(m_pVertexArray[t.v1].x);
-				glm::vec3 v1 = (glm::vec3)(m_pVertexArray[t.v2].x);
-				glm::vec3 v2 = (glm::vec3)(m_pVertexArray[t.v3].x);
+				glm::vec3 v0 = glm::vec3(m_pVertexArray[t.v1].x, m_pVertexArray[t.v1].y, m_pVertexArray[t.v1].z);
+				glm::vec3 v1 = glm::vec3(m_pVertexArray[t.v2].x, m_pVertexArray[t.v2].y, m_pVertexArray[t.v2].z);
+				glm::vec3 v2 = glm::vec3(m_pVertexArray[t.v3].x, m_pVertexArray[t.v3].y, m_pVertexArray[t.v3].z);
 
-				glm::vec2 uv0 = (glm::vec2)(m_pUVArray[t.t1].u);
-				glm::vec2 uv1 = (glm::vec2)(m_pUVArray[t.t2].u);
-				glm::vec2 uv2 = (glm::vec2)(m_pUVArray[t.t3].u);
+				glm::vec2 uv0 = glm::vec2(m_pUVArray[t.t1].u, m_pUVArray[t.t1].v);
+				glm::vec2 uv1 = glm::vec2(m_pUVArray[t.t2].u, m_pUVArray[t.t2].v);
+				glm::vec2 uv2 = glm::vec2(m_pUVArray[t.t3].u, m_pUVArray[t.t3].v);
 
-				glm::vec3 deltaPos1 = v1-v0;
-				glm::vec3 deltaPos2 = v2-v0;
+				glm::vec3 deltaPos1 = glm::normalize(v1-v0);
+				glm::vec3 deltaPos2 = glm::normalize(v2-v0);
 
-				glm::vec2 deltaUV1 = uv1 - uv0;
-				glm::vec2 deltaUV2 = uv2 - uv0;
+				glm::vec2 deltaUV1 = glm::normalize(uv1 - uv0);
+				glm::vec2 deltaUV2 = glm::normalize(uv2 - uv0);
 
-				float r = 1.f/ (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+				float r = 1.f/ ((deltaUV1.x * deltaUV2.y) - (deltaUV1.y * deltaUV2.x));
 				glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)*r;
-				glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x)*r;
+				glMultiTexCoord3fv(GL_TEXTURE1, &tangent[0]);
 
-				glUniform3fv(T, 1, &tangent[0]);
-				glUniform3fv(B, 1, &bitangent[0]);
 
 			}
 		glBegin( GL_TRIANGLES );
@@ -380,6 +374,10 @@ void G308_Geometry::RenderGeometry() {
 		if (texture || normal ){
 			glDisable(GL_TEXTURE_2D);
 			glEnable(GL_COLOR_MATERIAL);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	} else if (mode == G308_SHADE_WIREFRAME) {
 		glCallList(m_glGeomListWire);

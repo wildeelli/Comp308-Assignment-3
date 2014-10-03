@@ -71,7 +71,11 @@ GLfloat l1_diffintensity[] = { 0.85f, 0.85f, 0.85f, 1.0f };
 GLfloat l1_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 GLfloat l1_specular[] = { 1.f, 1.f, 1.f, 1.0f };
 
-GLfloat l2_direction[] = { 0.0f, 1.0f, 1.0f, 0.0f };
+GLfloat l2_direction[] = { 0.0f, 1.0f, -1.0f, 0.0f };
+GLfloat l2_diffintensity[] = { 0.35f, 0.35f, 0.35f, 1.0f };
+GLfloat l2_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+GLfloat l2_specular[] = { 1.f, 1.f, 1.f, 1.0f };
+
 
 //
 #endif /* MATERIALS_HPP_ */
